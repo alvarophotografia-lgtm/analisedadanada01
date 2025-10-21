@@ -1,16 +1,21 @@
+import { useState } from 'react';
 import { Strategy } from '@/types/strategy';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Switch } from '@/components/ui/switch';
-import { Trash2, RotateCcw, AlertTriangle } from 'lucide-react';
+import { Trash2, RotateCcw, AlertTriangle, Settings } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { LineChart, Line, ResponsiveContainer } from 'recharts';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 interface StrategyMonitorProps {
   strategies: Strategy[];
   onToggle: (id: string) => void;
   onReset: (id: string) => void;
   onRemove: (id: string) => void;
+  onUpdateAlerts: (id: string, alertOnWinStreak?: number, alertOnLossStreak?: number) => void;
 }
 
 const getValueLabel = (value: any): string => {
@@ -36,7 +41,27 @@ const getValueLabel = (value: any): string => {
   }
 };
 
-export const StrategyMonitor = ({ strategies, onToggle, onReset, onRemove }: StrategyMonitorProps) => {
+export const StrategyMonitor = ({ strategies, onToggle, onReset, onRemove, onUpdateAlerts }: StrategyMonitorProps) => {
+  const [editingStrategyId, setEditingStrategyId] = useState<string | null>(null);
+  const [tempAlertWins, setTempAlertWins] = useState<number>(0);
+  const [tempAlertLosses, setTempAlertLosses] = useState<number>(0);
+
+  const openAlertDialog = (strategy: Strategy) => {
+    setEditingStrategyId(strategy.id);
+    setTempAlertWins(strategy.alertOnWinStreak || 0);
+    setTempAlertLosses(strategy.alertOnLossStreak || 0);
+  };
+
+  const saveAlerts = () => {
+    if (editingStrategyId) {
+      onUpdateAlerts(
+        editingStrategyId,
+        tempAlertWins > 0 ? tempAlertWins : undefined,
+        tempAlertLosses > 0 ? tempAlertLosses : undefined
+      );
+      setEditingStrategyId(null);
+    }
+  };
   if (strategies.length === 0) {
     return (
       <div className="glass-card rounded-xl p-12 text-center">
@@ -171,6 +196,61 @@ export const StrategyMonitor = ({ strategies, onToggle, onReset, onRemove }: Str
               </div>
 
               <div className="flex gap-2 ml-4">
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button
+                      onClick={() => openAlertDialog(strategy)}
+                      variant="ghost"
+                      size="icon"
+                      className="shrink-0"
+                    >
+                      <Settings className="w-4 h-4" />
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="glass-card border-white/10">
+                    <DialogHeader>
+                      <DialogTitle>⚡ Configurar Alertas de Prioridade</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="alert-wins">
+                          Priorizar após <span className="text-green-400">acertos</span> consecutivos:
+                        </Label>
+                        <Input
+                          id="alert-wins"
+                          type="number"
+                          min="0"
+                          value={tempAlertWins}
+                          onChange={(e) => setTempAlertWins(Number(e.target.value))}
+                          placeholder="0 = desabilitado"
+                          className="glass-card"
+                        />
+                        <p className="text-xs text-gray-500">Ex: 5 = alerta após 5 acertos seguidos</p>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="alert-losses">
+                          Priorizar após <span className="text-red-400">erros</span> consecutivos:
+                        </Label>
+                        <Input
+                          id="alert-losses"
+                          type="number"
+                          min="0"
+                          value={tempAlertLosses}
+                          onChange={(e) => setTempAlertLosses(Number(e.target.value))}
+                          placeholder="0 = desabilitado"
+                          className="glass-card"
+                        />
+                        <p className="text-xs text-gray-500">Ex: 5 = alerta após 5 erros seguidos</p>
+                      </div>
+
+                      <Button onClick={saveAlerts} className="w-full">
+                        Salvar Alertas
+                      </Button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+                
                 <Button
                   onClick={() => onReset(strategy.id)}
                   variant="ghost"

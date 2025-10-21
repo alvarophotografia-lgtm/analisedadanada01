@@ -52,6 +52,17 @@ export const useStrategyMonitor = (results: number[]) => {
     ));
   }, []);
 
+  const updateAlerts = useCallback((id: string, alertOnWinStreak?: number, alertOnLossStreak?: number) => {
+    setStrategies(prev => prev.map(s => 
+      s.id === id ? { 
+        ...s, 
+        alertOnWinStreak,
+        alertOnLossStreak,
+        isPriority: false, // Reset priority quando mudar alertas
+      } : s
+    ));
+  }, []);
+
   // Atualiza estratégias baseado nos resultados
   useEffect(() => {
     if (results.length === 0) return;
@@ -72,9 +83,11 @@ export const useStrategyMonitor = (results: number[]) => {
           
           // Só conta como acerto a partir do segundo número consecutivo
           if (newConsecutiveHits > 1) {
-          const newHistory = [...strategy.history, { spin: latestNumber, result: 'hit' as const }];
+            const newHistory = [...strategy.history, { spin: latestNumber, result: 'hit' as const }];
             const newStreak = strategy.currentStreak >= 0 ? strategy.currentStreak + 1 : 1;
             const shouldPrioritize = strategy.alertOnWinStreak && newStreak >= strategy.alertOnWinStreak;
+            // Remove prioridade se estava em prioridade por erros e agora acertou
+            const wasPriorityByLoss = strategy.isPriority && strategy.alertOnLossStreak;
             
             return {
               ...strategy,
@@ -83,7 +96,7 @@ export const useStrategyMonitor = (results: number[]) => {
               history: newHistory,
               currentStreak: newStreak,
               longestWinStreak: Math.max(strategy.longestWinStreak, newStreak),
-              isPriority: shouldPrioritize || strategy.isPriority,
+              isPriority: wasPriorityByLoss ? false : shouldPrioritize,
             };
           } else {
             // Primeiro número do conjunto - apenas inicia a contagem (base)
@@ -130,7 +143,7 @@ export const useStrategyMonitor = (results: number[]) => {
             history: newHistory,
             currentStreak: newStreak,
             longestLossStreak: Math.max(strategy.longestLossStreak, Math.abs(newStreak)),
-            isPriority: shouldPrioritize || strategy.isPriority,
+            isPriority: shouldPrioritize,
           };
         }
       }
@@ -152,6 +165,8 @@ export const useStrategyMonitor = (results: number[]) => {
           const newHistory = [...strategy.history, { spin: latestNumber, result: 'hit' as const }];
           const newStreak = strategy.currentStreak >= 0 ? strategy.currentStreak + 1 : 1;
           const shouldPrioritize = strategy.alertOnWinStreak && newStreak >= strategy.alertOnWinStreak;
+          // Remove prioridade se estava em prioridade por erros e agora acertou
+          const wasPriorityByLoss = strategy.isPriority && strategy.alertOnLossStreak;
           
           return {
             ...strategy,
@@ -160,7 +175,7 @@ export const useStrategyMonitor = (results: number[]) => {
             history: newHistory,
             currentStreak: newStreak,
             longestWinStreak: Math.max(strategy.longestWinStreak, newStreak),
-            isPriority: shouldPrioritize || strategy.isPriority,
+            isPriority: wasPriorityByLoss ? false : shouldPrioritize,
           };
         }
 
@@ -188,7 +203,7 @@ export const useStrategyMonitor = (results: number[]) => {
             history: newHistory,
             currentStreak: newStreak,
             longestLossStreak: Math.max(strategy.longestLossStreak, Math.abs(newStreak)),
-            isPriority: shouldPrioritize || strategy.isPriority,
+            isPriority: shouldPrioritize,
           };
         }
 
@@ -219,5 +234,6 @@ export const useStrategyMonitor = (results: number[]) => {
     removeStrategy,
     toggleStrategy,
     resetStrategy,
+    updateAlerts,
   };
 };

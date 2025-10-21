@@ -16,7 +16,7 @@ import { RotateCcw, Trash2 } from 'lucide-react';
 
 const Index = () => {
   const { results, stats, addNumber, clearResults, undoLast } = useRouletteData();
-  const { strategies, addStrategy, removeStrategy, toggleStrategy, resetStrategy } = useStrategyMonitor(results);
+  const { strategies, addStrategy, removeStrategy, toggleStrategy, resetStrategy, updateAlerts } = useStrategyMonitor(results);
   const [activeTab, setActiveTab] = useState('input');
 
   const handleAddNumber = (num: number) => {
@@ -96,6 +96,7 @@ const Index = () => {
                 onToggle={toggleStrategy}
                 onReset={resetStrategy}
                 onRemove={removeStrategy}
+                onUpdateAlerts={updateAlerts}
               />
               <RecentResults results={results} maxDisplay={20} />
             </div>
@@ -116,6 +117,7 @@ const Index = () => {
                   onToggle={toggleStrategy}
                   onReset={resetStrategy}
                   onRemove={removeStrategy}
+                  onUpdateAlerts={updateAlerts}
                 />
               </div>
             </div>
