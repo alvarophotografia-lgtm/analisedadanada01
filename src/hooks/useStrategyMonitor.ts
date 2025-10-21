@@ -4,7 +4,7 @@ import { Strategy, matchesStrategyValue } from '@/types/strategy';
 export const useStrategyMonitor = (results: number[]) => {
   const [strategies, setStrategies] = useState<Strategy[]>([]);
 
-  const addStrategy = useCallback((strategy: Omit<Strategy, 'id' | 'hits' | 'misses' | 'currentProgress' | 'isActive' | 'history' | 'currentStreak' | 'longestWinStreak' | 'longestLossStreak' | 'currentConsecutiveHits' | 'consecutiveHitStreaks'>) => {
+  const addStrategy = useCallback((strategy: Omit<Strategy, 'id' | 'hits' | 'misses' | 'currentProgress' | 'isActive' | 'history' | 'currentStreak' | 'longestWinStreak' | 'longestLossStreak' | 'currentConsecutiveHits' | 'consecutiveHitStreaks' | 'isPriority'>) => {
     const newStrategy: Strategy = {
       ...strategy,
       id: Date.now().toString(),
@@ -18,6 +18,7 @@ export const useStrategyMonitor = (results: number[]) => {
       longestLossStreak: 0,
       currentConsecutiveHits: strategy.type === 'number-set' ? 0 : undefined,
       consecutiveHitStreaks: strategy.type === 'number-set' ? {} : undefined,
+      isPriority: false,
     };
     setStrategies(prev => [...prev, newStrategy]);
     return newStrategy.id;
@@ -46,6 +47,7 @@ export const useStrategyMonitor = (results: number[]) => {
         longestLossStreak: 0,
         currentConsecutiveHits: s.type === 'number-set' ? 0 : undefined,
         consecutiveHitStreaks: s.type === 'number-set' ? {} : undefined,
+        isPriority: false,
       } : s
     ));
   }, []);
@@ -56,8 +58,9 @@ export const useStrategyMonitor = (results: number[]) => {
 
     const latestNumber = results[0];
 
-    setStrategies(prev => prev.map(strategy => {
-      if (!strategy.isActive) return strategy;
+    setStrategies(prev => {
+      const updated = prev.map(strategy => {
+        if (!strategy.isActive) return strategy;
 
       // Lógica especial para estratégias de conjunto de números
       if (strategy.type === 'number-set' && strategy.sequence.length === 1 && strategy.sequence[0].type === 'number-set') {
@@ -69,8 +72,9 @@ export const useStrategyMonitor = (results: number[]) => {
           
           // Só conta como acerto a partir do segundo número consecutivo
           if (newConsecutiveHits > 1) {
-            const newHistory = [...strategy.history, { spin: latestNumber, result: 'hit' as const }];
+          const newHistory = [...strategy.history, { spin: latestNumber, result: 'hit' as const }];
             const newStreak = strategy.currentStreak >= 0 ? strategy.currentStreak + 1 : 1;
+            const shouldPrioritize = strategy.alertOnWinStreak && newStreak >= strategy.alertOnWinStreak;
             
             return {
               ...strategy,
@@ -79,6 +83,7 @@ export const useStrategyMonitor = (results: number[]) => {
               history: newHistory,
               currentStreak: newStreak,
               longestWinStreak: Math.max(strategy.longestWinStreak, newStreak),
+              isPriority: shouldPrioritize || strategy.isPriority,
             };
           } else {
             // Primeiro número do conjunto - apenas inicia a contagem (base)
@@ -115,6 +120,7 @@ export const useStrategyMonitor = (results: number[]) => {
           
           const newHistory = [...strategy.history, { spin: latestNumber, result: 'miss' as const }];
           const newStreak = strategy.currentStreak <= 0 ? strategy.currentStreak - 1 : -1;
+          const shouldPrioritize = strategy.alertOnLossStreak && Math.abs(newStreak) >= strategy.alertOnLossStreak;
           
           return {
             ...strategy,
@@ -124,6 +130,7 @@ export const useStrategyMonitor = (results: number[]) => {
             history: newHistory,
             currentStreak: newStreak,
             longestLossStreak: Math.max(strategy.longestLossStreak, Math.abs(newStreak)),
+            isPriority: shouldPrioritize || strategy.isPriority,
           };
         }
       }
@@ -144,6 +151,7 @@ export const useStrategyMonitor = (results: number[]) => {
           const startsNew = matchesStrategyValue(latestNumber, strategy.sequence[0]);
           const newHistory = [...strategy.history, { spin: latestNumber, result: 'hit' as const }];
           const newStreak = strategy.currentStreak >= 0 ? strategy.currentStreak + 1 : 1;
+          const shouldPrioritize = strategy.alertOnWinStreak && newStreak >= strategy.alertOnWinStreak;
           
           return {
             ...strategy,
@@ -152,6 +160,7 @@ export const useStrategyMonitor = (results: number[]) => {
             history: newHistory,
             currentStreak: newStreak,
             longestWinStreak: Math.max(strategy.longestWinStreak, newStreak),
+            isPriority: shouldPrioritize || strategy.isPriority,
           };
         }
 
@@ -170,6 +179,7 @@ export const useStrategyMonitor = (results: number[]) => {
           const startsNew = matchesStrategyValue(latestNumber, strategy.sequence[0]);
           const newHistory = [...strategy.history, { spin: latestNumber, result: 'miss' as const }];
           const newStreak = strategy.currentStreak <= 0 ? strategy.currentStreak - 1 : -1;
+          const shouldPrioritize = strategy.alertOnLossStreak && Math.abs(newStreak) >= strategy.alertOnLossStreak;
           
           return {
             ...strategy,
@@ -178,6 +188,7 @@ export const useStrategyMonitor = (results: number[]) => {
             history: newHistory,
             currentStreak: newStreak,
             longestLossStreak: Math.max(strategy.longestLossStreak, Math.abs(newStreak)),
+            isPriority: shouldPrioritize || strategy.isPriority,
           };
         }
 
@@ -189,7 +200,17 @@ export const useStrategyMonitor = (results: number[]) => {
           currentProgress: startsNew ? 1 : 0,
         };
       }
-    }));
+      });
+
+      // Ordenar: estratégias prioritárias primeiro, depois ativas, depois inativas
+      return updated.sort((a, b) => {
+        if (a.isPriority && !b.isPriority) return -1;
+        if (!a.isPriority && b.isPriority) return 1;
+        if (a.isActive && !b.isActive) return -1;
+        if (!a.isActive && b.isActive) return 1;
+        return 0;
+      });
+    });
   }, [results]);
 
   return {

@@ -22,6 +22,10 @@ export interface Strategy {
   // Para estratégias de conjunto de números
   currentConsecutiveHits?: number; // acertos consecutivos atuais
   consecutiveHitStreaks?: { [key: number]: number }; // conta quantas vezes teve 2, 3, 4... acertos consecutivos
+  // Configurações de alerta/prioridade
+  alertOnWinStreak?: number; // avisar após X acertos consecutivos (0 = desabilitado)
+  alertOnLossStreak?: number; // avisar após X erros consecutivos (0 = desabilitado)
+  isPriority?: boolean; // indica se a estratégia está em prioridade no momento
 }
 
 export type StrategyValue = 

@@ -2,7 +2,7 @@ import { Strategy } from '@/types/strategy';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Switch } from '@/components/ui/switch';
-import { Trash2, RotateCcw } from 'lucide-react';
+import { Trash2, RotateCcw, AlertTriangle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { LineChart, Line, ResponsiveContainer } from 'recharts';
 
@@ -68,10 +68,20 @@ export const StrategyMonitor = ({ strategies, onToggle, onReset, onRemove }: Str
         return (
           <div
             key={strategy.id}
-            className={`glass-card rounded-xl p-6 ${
-              strategy.isActive ? 'neon-glow' : 'opacity-60'
+            className={`glass-card rounded-xl p-6 relative ${
+              strategy.isPriority 
+                ? 'ring-2 ring-yellow-500 shadow-lg shadow-yellow-500/20 neon-glow' 
+                : strategy.isActive 
+                ? 'neon-glow' 
+                : 'opacity-60'
             }`}
           >
+            {strategy.isPriority && (
+              <div className="absolute -top-3 left-4 px-3 py-1 bg-yellow-500 text-black rounded-full text-xs font-bold flex items-center gap-1 shadow-lg">
+                <AlertTriangle className="w-3 h-3" />
+                PRIORIDADE
+              </div>
+            )}
             <div className="flex items-start justify-between mb-4">
               <div className="flex-1">
                 <div className="flex items-center gap-3 mb-2">
@@ -184,10 +194,20 @@ export const StrategyMonitor = ({ strategies, onToggle, onReset, onRemove }: Str
               <div className="text-center">
                 <div className="text-2xl font-bold text-green-400">{strategy.hits}</div>
                 <div className="text-xs text-gray-400">Acertos</div>
+                {strategy.alertOnWinStreak && strategy.alertOnWinStreak > 0 && (
+                  <div className="text-[10px] text-yellow-400 mt-1">
+                    Alerta: {strategy.alertOnWinStreak}+
+                  </div>
+                )}
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-red-400">{strategy.misses}</div>
                 <div className="text-xs text-gray-400">Erros</div>
+                {strategy.alertOnLossStreak && strategy.alertOnLossStreak > 0 && (
+                  <div className="text-[10px] text-yellow-400 mt-1">
+                    Alerta: {strategy.alertOnLossStreak}+
+                  </div>
+                )}
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-cyan-400">{winRate}%</div>

@@ -10,13 +10,21 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { NumberSetSelector } from './NumberSetSelector';
 
 interface StrategyCreatorProps {
-  onStrategyCreate: (strategy: { name: string; type: StrategyType; sequence: StrategyValue[] }) => void;
+  onStrategyCreate: (strategy: { 
+    name: string; 
+    type: StrategyType; 
+    sequence: StrategyValue[];
+    alertOnWinStreak?: number;
+    alertOnLossStreak?: number;
+  }) => void;
 }
 
 export const StrategyCreator = ({ onStrategyCreate }: StrategyCreatorProps) => {
   const [name, setName] = useState('');
   const [sequence, setSequence] = useState<StrategyValue[]>([]);
   const [useCustomName, setUseCustomName] = useState(false);
+  const [alertOnWinStreak, setAlertOnWinStreak] = useState<number>(0);
+  const [alertOnLossStreak, setAlertOnLossStreak] = useState<number>(0);
 
   const addToSequence = (value: StrategyValue) => {
     setSequence([...sequence, value]);
@@ -42,13 +50,17 @@ export const StrategyCreator = ({ onStrategyCreate }: StrategyCreatorProps) => {
     onStrategyCreate({ 
       name: strategyName, 
       type: sequence[0].type, 
-      sequence 
+      sequence,
+      alertOnWinStreak: alertOnWinStreak > 0 ? alertOnWinStreak : undefined,
+      alertOnLossStreak: alertOnLossStreak > 0 ? alertOnLossStreak : undefined,
     });
     
     // Reset form
     setName('');
     setSequence([]);
     setUseCustomName(false);
+    setAlertOnWinStreak(0);
+    setAlertOnLossStreak(0);
     
     toast.success('Estratégia criada com sucesso!');
   };
@@ -96,6 +108,43 @@ export const StrategyCreator = ({ onStrategyCreate }: StrategyCreatorProps) => {
             />
           </div>
         )}
+
+        <div className="space-y-3 p-4 glass-card rounded-lg border border-yellow-500/20">
+          <Label className="text-yellow-400 font-semibold">⚡ Alertas de Prioridade</Label>
+          <p className="text-xs text-gray-400">Configure quando esta estratégia deve ganhar prioridade</p>
+          
+          <div className="space-y-2">
+            <Label htmlFor="alert-wins" className="text-sm">
+              Priorizar após <span className="text-green-400">acertos</span> consecutivos:
+            </Label>
+            <Input
+              id="alert-wins"
+              type="number"
+              min="0"
+              value={alertOnWinStreak}
+              onChange={(e) => setAlertOnWinStreak(Number(e.target.value))}
+              placeholder="0 = desabilitado"
+              className="glass-card"
+            />
+            <p className="text-xs text-gray-500">Ex: 5 = alerta após 5 acertos seguidos</p>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="alert-losses" className="text-sm">
+              Priorizar após <span className="text-red-400">erros</span> consecutivos:
+            </Label>
+            <Input
+              id="alert-losses"
+              type="number"
+              min="0"
+              value={alertOnLossStreak}
+              onChange={(e) => setAlertOnLossStreak(Number(e.target.value))}
+              placeholder="0 = desabilitado"
+              className="glass-card"
+            />
+            <p className="text-xs text-gray-500">Ex: 5 = alerta após 5 erros seguidos</p>
+          </div>
+        </div>
 
         <div>
           <Label>Adicionar à Sequência</Label>
