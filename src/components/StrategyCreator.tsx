@@ -8,6 +8,7 @@ import { StrategyType, StrategyValue } from '@/types/strategy';
 import { toast } from 'sonner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { NumberSetSelector } from './NumberSetSelector';
+import { TargetNumbersSelector } from './TargetNumbersSelector';
 
 interface StrategyCreatorProps {
   onStrategyCreate: (strategy: { 
@@ -73,6 +74,9 @@ export const StrategyCreator = ({ onStrategyCreate }: StrategyCreatorProps) => {
         return value.value.toString();
       case 'number-set':
         return `{${(value.value as number[]).join(', ')}}`;
+      case 'target-numbers':
+        const targets = value.value as { base: number[]; targets: number[] };
+        return `Base:[${targets.base.join(',')}] → Alvo:[${targets.targets.join(',')}]`;
     }
   };
 
@@ -104,7 +108,7 @@ export const StrategyCreator = ({ onStrategyCreate }: StrategyCreatorProps) => {
         <div>
           <Label>Adicionar à Sequência</Label>
           <Tabs defaultValue="color" className="mt-2">
-            <TabsList className="grid grid-cols-7 w-full">
+            <TabsList className="grid grid-cols-8 w-full">
               <TabsTrigger value="color" className="text-xs">Cor</TabsTrigger>
               <TabsTrigger value="parity" className="text-xs">Par/Ímpar</TabsTrigger>
               <TabsTrigger value="range" className="text-xs">Faixa</TabsTrigger>
@@ -112,6 +116,7 @@ export const StrategyCreator = ({ onStrategyCreate }: StrategyCreatorProps) => {
               <TabsTrigger value="column" className="text-xs">Coluna</TabsTrigger>
               <TabsTrigger value="number" className="text-xs">Número</TabsTrigger>
               <TabsTrigger value="number-set" className="text-xs">Conjunto</TabsTrigger>
+              <TabsTrigger value="target-numbers" className="text-xs">Alvos</TabsTrigger>
             </TabsList>
 
             <TabsContent value="color" className="space-y-2 mt-3">
@@ -235,6 +240,12 @@ export const StrategyCreator = ({ onStrategyCreate }: StrategyCreatorProps) => {
             <TabsContent value="number-set" className="space-y-2 mt-3">
               <NumberSetSelector onSelect={(numbers) => {
                 setSequence([{ type: 'number-set', value: numbers }]);
+              }} />
+            </TabsContent>
+
+            <TabsContent value="target-numbers" className="space-y-2 mt-3">
+              <TargetNumbersSelector onSelect={(base, targets) => {
+                setSequence([{ type: 'target-numbers', value: { base, targets } }]);
               }} />
             </TabsContent>
           </Tabs>

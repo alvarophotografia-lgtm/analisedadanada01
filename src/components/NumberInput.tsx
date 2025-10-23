@@ -69,7 +69,7 @@ export const NumberInput = memo(({ onNumberAdd }: NumberInputProps) => {
       for (let i = numbers.length - 1; i >= 0; i--) {
         onNumberAdd(numbers[i]);
         if (i > 0) {
-          await new Promise(resolve => setTimeout(resolve, 100)); // 100ms de delay entre cada número
+          await new Promise(resolve => setTimeout(resolve, 300)); // 300ms de delay entre cada número
         }
       }
       setMultipleNumbers('');
@@ -95,7 +95,7 @@ export const NumberInput = memo(({ onNumberAdd }: NumberInputProps) => {
         for (let i = numbers.length - 1; i >= 0; i--) {
           onNumberAdd(numbers[i]);
           if (i > 0) {
-            await new Promise(resolve => setTimeout(resolve, 100)); // 100ms de delay entre cada número
+            await new Promise(resolve => setTimeout(resolve, 300)); // 300ms de delay entre cada número
           }
         }
         toast.success(`${numbers.length} números extraídos e adicionados!`);

@@ -35,7 +35,7 @@ serve(async (req) => {
             content: [
               {
                 type: "text",
-                text: "Extraia todos os números desta imagem de resultados da roleta. Retorne APENAS os números separados por espaços, na ordem exata em que aparecem (esquerda para direita, cima para baixo). Inclua apenas números entre 0-36. Não inclua nenhum outro texto, explicação ou formatação. Se não encontrar números válidos de roleta (0-36), retorne 'NENHUM_NUMERO'."
+                text: "Analise cuidadosamente esta imagem e extraia TODOS os números de roleta visíveis (0-36). IMPORTANTE: Examine cada área da imagem com atenção, não pule nenhum número. Retorne APENAS os números separados por espaços, na ordem exata em que aparecem (esquerda para direita, cima para baixo). Não inclua nenhum outro texto, explicação ou formatação. Se a imagem estiver vazia ou não contiver números válidos de roleta, retorne 'NENHUM_NUMERO'."
               },
               {
                 type: "image_url",

@@ -36,6 +36,9 @@ const getValueLabel = (value: any): string => {
       return value.value.toString();
     case 'number-set':
       return `{${(value.value as number[]).join(', ')}}`;
+    case 'target-numbers':
+      const targets = value.value as { base: number[]; targets: number[] };
+      return `Base:[${targets.base.join(',')}] → Alvo:[${targets.targets.join(',')}]`;
     default:
       return '';
   }

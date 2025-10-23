@@ -1,4 +1,4 @@
-export type StrategyType = 'color' | 'parity' | 'range' | 'dozen' | 'column' | 'number' | 'number-set';
+export type StrategyType = 'color' | 'parity' | 'range' | 'dozen' | 'column' | 'number' | 'number-set' | 'target-numbers';
 
 export type ColorValue = 'red' | 'black' | 'green';
 export type ParityValue = 'even' | 'odd';
@@ -35,7 +35,8 @@ export type StrategyValue =
   | { type: 'dozen'; value: DozenValue }
   | { type: 'column'; value: ColumnValue }
   | { type: 'number'; value: number }
-  | { type: 'number-set'; value: number[] };
+  | { type: 'number-set'; value: number[] }
+  | { type: 'target-numbers'; value: { base: number[]; targets: number[] } };
 
 export const RED_NUMBERS = [1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36];
 
@@ -85,6 +86,9 @@ export const matchesStrategyValue = (num: number, value: StrategyValue): boolean
       return num === value.value;
     case 'number-set':
       return value.value.includes(num);
+    case 'target-numbers':
+      // Para target-numbers, verificamos se o número está na lista base
+      return value.value.base.includes(num);
     default:
       return false;
   }
