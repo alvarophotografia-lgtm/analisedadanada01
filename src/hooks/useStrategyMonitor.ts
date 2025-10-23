@@ -65,10 +65,13 @@ export const useStrategyMonitor = (results: number[]) => {
           const shouldPrioritize = strategy.alertOnWinStreak && newStreak >= strategy.alertOnWinStreak;
           const wasPriorityByLoss = strategy.isPriority && strategy.alertOnLossStreak;
           
+          // Se o número é TAMBÉM uma base, mantém ativo para próxima análise
+          const isAlsoBase = base.includes(latestNumber);
+          
           return {
             ...strategy,
             hits: strategy.hits + 1,
-            currentConsecutiveHits: 0, // Reset para aguardar próxima base
+            currentConsecutiveHits: isAlsoBase ? 1 : 0, // Mantém base ativa se for base E alvo
             history: newHistory,
             currentStreak: newStreak,
             longestWinStreak: Math.max(strategy.longestWinStreak, newStreak),
