@@ -112,13 +112,22 @@ export const useStrategyMonitor = (results: number[]) => {
             return strategy;
           }
           
-          if (strategy.currentConsecutiveHits === 1) {
-            // Estava apenas na base, não conta erro, apenas reseta
-            return {
-              ...strategy,
-              currentConsecutiveHits: 0,
-            };
-          }
+            if (strategy.currentConsecutiveHits === 1) {
+              // Estava na base e quebrou - conta como erro
+              const newHistory = [...strategy.history, { spin: latestNumber, result: 'miss' as const }];
+              const newStreak = strategy.currentStreak <= 0 ? strategy.currentStreak - 1 : -1;
+              const shouldPrioritize = strategy.alertOnLossStreak && Math.abs(newStreak) >= strategy.alertOnLossStreak;
+              
+              return {
+                ...strategy,
+                misses: strategy.misses + 1,
+                currentConsecutiveHits: 0,
+                history: newHistory,
+                currentStreak: newStreak,
+                longestLossStreak: Math.max(strategy.longestLossStreak, Math.abs(newStreak)),
+                isPriority: shouldPrioritize,
+              };
+            }
           
           // Se tinha 2+ acertos consecutivos, marca erro e registra o streak
           const previousConsecutiveHits = strategy.currentConsecutiveHits;
