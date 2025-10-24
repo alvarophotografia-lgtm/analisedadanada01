@@ -66,6 +66,13 @@ const Index = () => {
           {/* Input Tab */}
           <TabsContent value="input" className="space-y-4 md:space-y-6">
             <div className="glass-card rounded-xl p-4 md:p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="text-3xl">🎲</div>
+                <div>
+                  <h3 className="text-lg font-bold">Entrada de Números</h3>
+                  <p className="text-sm text-muted-foreground">Adicione resultados manualmente ou via imagem</p>
+                </div>
+              </div>
               <NumberInput onNumberAdd={handleAddNumber} />
               
               <div className="flex gap-2 justify-center mt-4">
@@ -91,14 +98,32 @@ const Index = () => {
             </div>
 
             <div className="grid md:grid-cols-2 gap-6">
-              <StrategyMonitor
-                strategies={strategies}
-                onToggle={toggleStrategy}
-                onReset={resetStrategy}
-                onRemove={removeStrategy}
-                onUpdateAlerts={updateAlerts}
-              />
-              <RecentResults results={results} maxDisplay={20} />
+              <div>
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="text-2xl">🎯</div>
+                  <div>
+                    <h3 className="text-lg font-bold">Estratégias Monitoradas</h3>
+                    <p className="text-sm text-muted-foreground">Acompanhe suas estratégias em tempo real</p>
+                  </div>
+                </div>
+                <StrategyMonitor
+                  strategies={strategies}
+                  onToggle={toggleStrategy}
+                  onReset={resetStrategy}
+                  onRemove={removeStrategy}
+                  onUpdateAlerts={updateAlerts}
+                />
+              </div>
+              <div>
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="text-2xl">📋</div>
+                  <div>
+                    <h3 className="text-lg font-bold">Histórico Recente</h3>
+                    <p className="text-sm text-muted-foreground">Últimos 20 resultados da roleta</p>
+                  </div>
+                </div>
+                <RecentResults results={results} maxDisplay={20} />
+              </div>
             </div>
           </TabsContent>
 
@@ -110,8 +135,24 @@ const Index = () => {
             </div>
 
             <div className="grid md:grid-cols-2 gap-6">
-              <StrategyCreator onStrategyCreate={addStrategy} />
               <div>
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="text-2xl">✨</div>
+                  <div>
+                    <h3 className="text-lg font-bold">Criar Estratégia</h3>
+                    <p className="text-sm text-muted-foreground">Monte sua estratégia personalizada de apostas</p>
+                  </div>
+                </div>
+                <StrategyCreator onStrategyCreate={addStrategy} />
+              </div>
+              <div>
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="text-2xl">🎯</div>
+                  <div>
+                    <h3 className="text-lg font-bold">Suas Estratégias</h3>
+                    <p className="text-sm text-muted-foreground">Gerencie e monitore estratégias criadas</p>
+                  </div>
+                </div>
                 <StrategyMonitor
                   strategies={strategies}
                   onToggle={toggleStrategy}
@@ -122,7 +163,16 @@ const Index = () => {
               </div>
             </div>
 
-            <RecentResults results={results} maxDisplay={20} />
+            <div>
+              <div className="flex items-center gap-3 mb-4">
+                <div className="text-2xl">📋</div>
+                <div>
+                  <h3 className="text-lg font-bold">Histórico de Resultados</h3>
+                  <p className="text-sm text-muted-foreground">Todos os números registrados</p>
+                </div>
+              </div>
+              <RecentResults results={results} maxDisplay={20} />
+            </div>
           </TabsContent>
 
           {/* Dashboard Tab */}
@@ -133,6 +183,13 @@ const Index = () => {
             </div>
 
             {/* Stats Grid */}
+            <div className="flex items-center gap-3 mb-4">
+              <div className="text-2xl">📊</div>
+              <div>
+                <h3 className="text-lg font-bold">Estatísticas Gerais</h3>
+                <p className="text-sm text-muted-foreground">Resumo completo de todos os resultados</p>
+              </div>
+            </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
               <StatsCard
                 title="Total"
@@ -184,7 +241,16 @@ const Index = () => {
               />
             </div>
 
-            <RecentResults results={results} maxDisplay={50} />
+            <div>
+              <div className="flex items-center gap-3 mb-4">
+                <div className="text-2xl">📜</div>
+                <div>
+                  <h3 className="text-lg font-bold">Histórico Completo</h3>
+                  <p className="text-sm text-muted-foreground">Até 50 resultados mais recentes</p>
+                </div>
+              </div>
+              <RecentResults results={results} maxDisplay={50} />
+            </div>
           </TabsContent>
 
           {/* Analysis Tab */}
@@ -195,6 +261,13 @@ const Index = () => {
             </div>
 
             {/* Quick Stats */}
+            <div className="flex items-center gap-3 mb-4">
+              <div className="text-2xl">🎲</div>
+              <div>
+                <h3 className="text-lg font-bold">Estatísticas Rápidas</h3>
+                <p className="text-sm text-muted-foreground">Visão geral dos dados</p>
+              </div>
+            </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
               <StatsCard
                 title="Resultados"
@@ -218,11 +291,38 @@ const Index = () => {
               />
             </div>
 
-            <HotColdNumbers results={results} />
+            <div>
+              <div className="flex items-center gap-3 mb-4">
+                <div className="text-2xl">🔥</div>
+                <div>
+                  <h3 className="text-lg font-bold">Números Quentes e Frios</h3>
+                  <p className="text-sm text-muted-foreground">Frequência de aparição dos números</p>
+                </div>
+              </div>
+              <HotColdNumbers results={results} />
+            </div>
 
-            <StrategyStreaks strategies={strategies} />
+            <div>
+              <div className="flex items-center gap-3 mb-4">
+                <div className="text-2xl">📈</div>
+                <div>
+                  <h3 className="text-lg font-bold">Sequências de Estratégias</h3>
+                  <p className="text-sm text-muted-foreground">Padrões de vitórias e derrotas</p>
+                </div>
+              </div>
+              <StrategyStreaks strategies={strategies} />
+            </div>
 
-            <NumberCorrelation results={results} />
+            <div>
+              <div className="flex items-center gap-3 mb-4">
+                <div className="text-2xl">🔗</div>
+                <div>
+                  <h3 className="text-lg font-bold">Correlação de Números</h3>
+                  <p className="text-sm text-muted-foreground">Números que aparecem juntos com frequência</p>
+                </div>
+              </div>
+              <NumberCorrelation results={results} />
+            </div>
 
             {results.length === 0 && (
               <div className="glass-card rounded-xl p-12 text-center">
