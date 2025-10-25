@@ -17,6 +17,24 @@ import { RotateCcw, Trash2 } from 'lucide-react';
 const Index = () => {
   const { results, stats, addNumber, clearResults, undoLast } = useRouletteData();
   const { strategies, addStrategy, removeStrategy, toggleStrategy, resetStrategy, updateAlerts } = useStrategyMonitor(results);
+
+  const handleImport = (data: { results: number[]; strategies: Strategy[] }) => {
+    // Clear current data
+    clearResults();
+    
+    // Import results
+    data.results.forEach(num => addNumber(num));
+    
+    // Import strategies
+    data.strategies.forEach(strategy => {
+      addStrategy(strategy.type, strategy.value, strategy.name);
+    });
+  };
+
+  const handleClearAll = () => {
+    clearResults();
+    strategies.forEach(s => removeStrategy(s.id));
+  };
   const [activeTab, setActiveTab] = useState('input');
 
   const handleAddNumber = (num: number) => {

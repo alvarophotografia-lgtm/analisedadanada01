@@ -1,8 +1,17 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { Strategy, matchesStrategyValue } from '@/types/strategy';
+import { useLocalStorage } from './useLocalStorage';
+import { useToast } from './use-toast';
 
 export const useStrategyMonitor = (results: number[]) => {
-  const [strategies, setStrategies] = useState<Strategy[]>([]);
+  const [strategies, setStrategies] = useLocalStorage<Strategy[]>('roulette-strategies', []);
+  const { toast } = useToast();
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  // Initialize audio on mount
+  useEffect(() => {
+    audioRef.current = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBTGH0fPTgjMGHm7A7+OZSA0PVKzn77BdGAg+ltrzxnYpBSl+zPLaizsIGGS57OihUBELTKXh8bllHAU2jdXzzn0vBSh+zfDajjkJF2e+7eidTAwPU6vm8LFdGAg+ltrzxnYpBSl+zPLaizsIGGS57OihUBELTKXh8bllHAU2jdXzzn0vBSh+zfDajjkJF2e+7eidTAwPU6vm8LFdGAg+ltrzxnYpBSl+zPLaizsIGGS57OihUBELTKXh8bllHAU2jdXzzn0vBSh+zfDajjkJF2e+7eidTAwPU6vm8LFdGAg+ltrzxnYpBSl+zPLaizsIGGS57OihUBELTKXh8bllHAU2jdXzzn0vBSh+zfDajjkJF2e+7eidTAwPU6vm8LFdGAg+ltrzxnYpBSl+zPLaizsIGGS57OihUBELTKXh8bllHAU2jdXzzn0vBSh+zfDajjkJF2e+7eidTAwPU6vm8LFdGAg+ltrzxnYpBSl+zPLaizsIGGS57OihUBELTKXh8bllHAU2jdXzzn0vBQ==');
+  }, []);
 
   const addStrategy = useCallback((strategy: Omit<Strategy, 'id' | 'hits' | 'misses' | 'currentProgress' | 'isActive' | 'history' | 'currentStreak' | 'longestWinStreak' | 'longestLossStreak' | 'currentConsecutiveHits' | 'consecutiveHitStreaks' | 'isPriority'>) => {
     const newStrategy: Strategy = {

@@ -1,4 +1,5 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
+import { useLocalStorage } from './useLocalStorage';
 
 interface RouletteStats {
   totalResults: number;
@@ -13,7 +14,7 @@ interface RouletteStats {
 const RED_NUMBERS = [1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36];
 
 export const useRouletteData = () => {
-  const [results, setResults] = useState<number[]>([]);
+  const [results, setResults] = useLocalStorage<number[]>('roulette-results', []);
 
   const addNumber = useCallback((num: number) => {
     if (num >= 0 && num <= 36) {
