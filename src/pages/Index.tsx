@@ -9,8 +9,11 @@ import { StrategyCreator } from '@/components/StrategyCreator';
 import { StrategyMonitor } from '@/components/StrategyMonitor';
 import { StrategyStreaks } from '@/components/StrategyStreaks';
 import { NumberCorrelation } from '@/components/NumberCorrelation';
+import { DataManager } from '@/components/DataManager';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import { useRouletteData } from '@/hooks/useRouletteData';
 import { useStrategyMonitor } from '@/hooks/useStrategyMonitor';
+import { Strategy } from '@/types/strategy';
 import { toast } from 'sonner';
 import { RotateCcw, Trash2 } from 'lucide-react';
 
@@ -27,7 +30,14 @@ const Index = () => {
     
     // Import strategies
     data.strategies.forEach(strategy => {
-      addStrategy(strategy.type, strategy.value, strategy.name);
+      // addStrategy agora aceita um objeto Strategy (sem id, hits, misses, etc)
+      addStrategy({
+        name: strategy.name,
+        type: strategy.type,
+        sequence: strategy.sequence,
+        alertOnWinStreak: strategy.alertOnWinStreak,
+        alertOnLossStreak: strategy.alertOnLossStreak,
+      });
     });
   };
 
@@ -58,10 +68,13 @@ const Index = () => {
     <div className="min-h-screen p-4 md:p-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <header className="text-center mb-6">
-          <h1 className="text-3xl md:text-4xl font-bold mb-2 bg-gradient-to-r from-red-500 via-yellow-400 to-cyan-400 bg-clip-text text-transparent">
-            🎰 Análise de Roleta
-          </h1>
+        <header className="flex justify-between items-center mb-6">
+          <div className="text-center flex-1">
+            <h1 className="text-3xl md:text-4xl font-bold mb-2 bg-gradient-to-r from-red-500 via-yellow-400 to-cyan-400 bg-clip-text text-transparent">
+              🎰 Análise de Roleta
+            </h1>
+          </div>
+          <ThemeToggle />
         </header>
 
         {/* Main Tabs */}
@@ -83,6 +96,14 @@ const Index = () => {
 
           {/* Input Tab */}
           <TabsContent value="input" className="space-y-4 md:space-y-6">
+            {/* Data Manager */}
+            <DataManager
+              results={results}
+              strategies={strategies}
+              onImport={handleImport}
+              onClearAll={handleClearAll}
+            />
+
             <div className="glass-card rounded-xl p-4 md:p-6">
               <div className="flex items-center gap-3 mb-4">
                 <div className="text-3xl">🎲</div>

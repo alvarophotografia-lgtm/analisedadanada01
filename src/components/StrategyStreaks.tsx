@@ -25,15 +25,19 @@ export const StrategyStreaks = ({ strategies }: StrategyStreaksProps) => {
       <h3 className="text-xl font-bold mb-4">📈 Análise de Sequências</h3>
       <div className="space-y-4">
         {strategies.map((strategy) => {
-          // Prepare data for the chart (last 20 events)
+          // Prepare data for the chart (last 20 events) - cumulative wins
+          let cumulativeWins = 0;
           const chartData = strategy.history
             .slice(-20)
             .reverse()
-            .map((event, idx) => ({
-              index: idx + 1,
-              streak: event.streak,
-              result: event.result,
-            }));
+            .map((event, idx) => {
+              if (event.result === 'hit') cumulativeWins++;
+              return {
+                index: idx + 1,
+                wins: cumulativeWins,
+                result: event.result,
+              };
+            });
 
           return (
             <Card key={strategy.id} className="p-4 bg-white/5 border-white/10">
@@ -58,17 +62,17 @@ export const StrategyStreaks = ({ strategies }: StrategyStreaksProps) => {
                           backgroundColor: 'hsl(var(--card))', 
                           border: '1px solid hsl(var(--border))',
                           borderRadius: '8px',
-                          fontSize: '12px'
+                          fontSize: 12
                         }}
                         labelFormatter={(value) => `Evento ${value}`}
                         formatter={(value: any, name: string) => {
-                          if (name === 'streak') return [`Sequência: ${value}`, ''];
+                          if (name === 'wins') return [`Acertos: ${value}`, ''];
                           return [value, name];
                         }}
                       />
                       <Line 
                         type="monotone" 
-                        dataKey="streak" 
+                        dataKey="wins" 
                         stroke="hsl(var(--primary))" 
                         strokeWidth={2}
                         dot={{ fill: 'hsl(var(--primary))', r: 3 }}
