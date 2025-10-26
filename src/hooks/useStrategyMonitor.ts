@@ -2,6 +2,17 @@ import { useCallback, useEffect, useRef } from 'react';
 import { Strategy, matchesStrategyValue } from '@/types/strategy';
 import { useLocalStorage } from './useLocalStorage';
 import { useToast } from './use-toast';
+import {
+  isColorHit,
+  isParityHit,
+  isRangeHit,
+  isDozenHit,
+  isColumnHit,
+  isNumberHit,
+  getNeighbors,
+  isNumberSetHit,
+  isTargetNumbersHit,
+} from '@/lib/evaluate';
 
 export const useStrategyMonitor = (results: number[]) => {
   const [strategies, setStrategies] = useLocalStorage<Strategy[]>('roulette-strategies', []);
@@ -307,7 +318,40 @@ export const useStrategyMonitor = (results: number[]) => {
     const latestNumber = results[0];
 
     setStrategies(prev => {
-      const updated = prev.map(strategy => processStrategyUpdate(strategy, latestNumber));
+      const updated = prev.map(strategy => {
+        const updatedStrategy = processStrategyUpdate(strategy, latestNumber);
+        
+        // Notifica se atingiu sequência de vitórias
+        if (
+          updatedStrategy.alertOnWinStreak &&
+          updatedStrategy.currentStreak >= updatedStrategy.alertOnWinStreak &&
+          strategy.currentStreak < updatedStrategy.alertOnWinStreak
+        ) {
+          toast({
+            title: "🎯 Sequência de Acertos!",
+            description: `${updatedStrategy.name}: ${updatedStrategy.currentStreak} acertos consecutivos`,
+            duration: 5000,
+          });
+          audioRef.current?.play().catch(err => console.warn('Audio play failed:', err));
+        }
+        
+        // Notifica se atingiu sequência de perdas
+        if (
+          updatedStrategy.alertOnLossStreak &&
+          Math.abs(updatedStrategy.currentStreak) >= updatedStrategy.alertOnLossStreak &&
+          Math.abs(strategy.currentStreak) < updatedStrategy.alertOnLossStreak
+        ) {
+          toast({
+            title: "⚠️ Sequência de Erros",
+            description: `${updatedStrategy.name}: ${Math.abs(updatedStrategy.currentStreak)} erros consecutivos`,
+            duration: 5000,
+            variant: "destructive",
+          });
+          audioRef.current?.play().catch(err => console.warn('Audio play failed:', err));
+        }
+        
+        return updatedStrategy;
+      });
 
       // Ordenar: estratégias prioritárias primeiro, depois ativas, depois inativas
       return updated.sort((a, b) => {
@@ -318,7 +362,7 @@ export const useStrategyMonitor = (results: number[]) => {
         return 0;
       });
     });
-  }, [results]);
+  }, [results, toast]);
 
   return {
     strategies,

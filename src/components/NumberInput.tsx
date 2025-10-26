@@ -9,6 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 
 interface NumberInputProps {
   onNumberAdd: (num: number) => void;
+  onBatchAdd?: (nums: number[]) => void;
 }
 
 const extractNumbersFromImage = async (file: File): Promise<number[]> => {
@@ -46,7 +47,7 @@ const extractNumbersFromImage = async (file: File): Promise<number[]> => {
   });
 };
 
-export const NumberInput = memo(({ onNumberAdd }: NumberInputProps) => {
+export const NumberInput = memo(({ onNumberAdd, onBatchAdd }: NumberInputProps) => {
   const [inputValue, setInputValue] = useState('');
   const [multipleNumbers, setMultipleNumbers] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
@@ -62,19 +63,31 @@ export const NumberInput = memo(({ onNumberAdd }: NumberInputProps) => {
 
   const handleMultipleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const numbers = multipleNumbers.trim().split(/\s+/).map(n => parseInt(n)).filter(n => !isNaN(n) && n >= 0 && n <= 36);
+    const numbers = multipleNumbers
+      .trim()
+      .split(/\s+/)
+      .map(n => parseInt(n))
+      .filter(n => !isNaN(n) && n >= 0 && n <= 36);
+    
     if (numbers.length > 0) {
-      setIsProcessing(true);
-      // Adiciona em ordem reversa para manter a ordem correta, um por vez com delay
-      for (let i = numbers.length - 1; i >= 0; i--) {
-        onNumberAdd(numbers[i]);
-        if (i > 0) {
-          await new Promise(resolve => setTimeout(resolve, 300)); // 300ms de delay entre cada número
+      // Usa batch add se disponível (mais rápido)
+      if (onBatchAdd) {
+        onBatchAdd(numbers.reverse()); // Reverso para manter ordem correta
+        setMultipleNumbers('');
+        toast.success(`${numbers.length} números adicionados!`);
+      } else {
+        // Fallback: adiciona um por um
+        setIsProcessing(true);
+        for (let i = numbers.length - 1; i >= 0; i--) {
+          onNumberAdd(numbers[i]);
+          if (i > 0) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+          }
         }
+        setMultipleNumbers('');
+        setIsProcessing(false);
+        toast.success(`${numbers.length} números adicionados!`);
       }
-      setMultipleNumbers('');
-      setIsProcessing(false);
-      toast.success(`${numbers.length} números adicionados!`);
     }
   };
 
@@ -91,14 +104,20 @@ export const NumberInput = memo(({ onNumberAdd }: NumberInputProps) => {
     try {
       const numbers = await extractNumbersFromImage(file);
       if (numbers.length > 0) {
-        // Adiciona em ordem reversa para manter a ordem correta, um por vez com delay
-        for (let i = numbers.length - 1; i >= 0; i--) {
-          onNumberAdd(numbers[i]);
-          if (i > 0) {
-            await new Promise(resolve => setTimeout(resolve, 300)); // 300ms de delay entre cada número
+        // Usa batch add se disponível (mais rápido)
+        if (onBatchAdd) {
+          onBatchAdd(numbers.reverse()); // Reverso para manter ordem correta
+          toast.success(`${numbers.length} números extraídos e adicionados!`);
+        } else {
+          // Fallback: adiciona um por um
+          for (let i = numbers.length - 1; i >= 0; i--) {
+            onNumberAdd(numbers[i]);
+            if (i > 0) {
+              await new Promise(resolve => setTimeout(resolve, 100));
+            }
           }
+          toast.success(`${numbers.length} números extraídos e adicionados!`);
         }
-        toast.success(`${numbers.length} números extraídos e adicionados!`);
       } else {
         toast.error('Nenhum número válido encontrado na imagem');
       }

@@ -13,10 +13,43 @@ serve(async (req) => {
 
   try {
     const { imageData, mimeType } = await req.json();
+
+    // Validate input
+    if (!imageData || typeof imageData !== 'string') {
+      return new Response(JSON.stringify({ 
+        success: false, 
+        error: 'imageData é obrigatório e deve ser uma string' 
+      }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Validate file size (5MB max)
+    const sizeBytes = Math.ceil((imageData.length * 3) / 4);
+    const maxSizeBytes = 5 * 1024 * 1024; // 5MB
+
+    if (sizeBytes > maxSizeBytes) {
+      return new Response(JSON.stringify({ 
+        success: false, 
+        error: 'Imagem muito grande. Tamanho máximo: 5MB' 
+      }), {
+        status: 413,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
 
     if (!LOVABLE_API_KEY) {
-      throw new Error('LOVABLE_API_KEY not configured');
+      console.error('LOVABLE_API_KEY not configured');
+      return new Response(JSON.stringify({ 
+        success: false, 
+        error: 'Erro de configuração do serviço' 
+      }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     console.log('Extracting numbers from image using Lovable AI...');
@@ -29,6 +62,8 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         model: "google/gemini-2.5-flash",
+        temperature: 0.0,
+        max_tokens: 500,
         messages: [
           {
             role: "user",

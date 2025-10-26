@@ -16,11 +16,11 @@ export const StatsCard = memo(({ title, value, icon, className, valueClassName }
       className
     )}>
       <div className="flex items-center justify-between mb-2">
-        <h3 className="text-sm md:text-base text-gray-300">{title}</h3>
+        <h3 className="text-sm md:text-base text-muted-foreground">{title}</h3>
         {icon && <div className="text-xl md:text-2xl">{icon}</div>}
       </div>
       <div className={cn(
-        "text-2xl md:text-4xl font-bold",
+        "text-2xl md:text-4xl font-bold text-foreground",
         valueClassName
       )}>
         {value}

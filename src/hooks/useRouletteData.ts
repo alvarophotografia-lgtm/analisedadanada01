@@ -17,10 +17,15 @@ export const useRouletteData = () => {
   const [results, setResults] = useLocalStorage<number[]>('roulette-results', []);
 
   const addNumber = useCallback((num: number) => {
-    if (num >= 0 && num <= 36) {
-      setResults(prev => [num, ...prev]);
-    }
-  }, []);
+    if (!Number.isInteger(num) || num < 0 || num > 36) return;
+    setResults(prev => [num, ...prev]);
+  }, [setResults]);
+
+  const addBatch = useCallback((nums: number[]) => {
+    const filtered = nums.filter(n => Number.isInteger(n) && n >= 0 && n <= 36);
+    if (filtered.length === 0) return;
+    setResults(prev => [...filtered, ...prev]);
+  }, [setResults]);
 
   const clearResults = useCallback(() => {
     setResults([]);
@@ -52,6 +57,7 @@ export const useRouletteData = () => {
     results,
     stats,
     addNumber,
+    addBatch,
     clearResults,
     undoLast
   };

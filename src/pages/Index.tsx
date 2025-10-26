@@ -18,7 +18,7 @@ import { toast } from 'sonner';
 import { RotateCcw, Trash2 } from 'lucide-react';
 
 const Index = () => {
-  const { results, stats, addNumber, clearResults, undoLast } = useRouletteData();
+  const { results, stats, addNumber, addBatch, clearResults, undoLast } = useRouletteData();
   const { strategies, addStrategy, removeStrategy, toggleStrategy, resetStrategy, updateAlerts } = useStrategyMonitor(results);
 
   const handleImport = (data: { results: number[]; strategies: Strategy[] }) => {
@@ -50,6 +50,11 @@ const Index = () => {
   const handleAddNumber = (num: number) => {
     addNumber(num);
     toast.success(`Número ${num} adicionado!`);
+  };
+
+  const handleBatchAdd = (nums: number[]) => {
+    addBatch(nums);
+    toast.success(`${nums.length} números adicionados!`);
   };
 
   const handleClear = () => {
@@ -112,7 +117,7 @@ const Index = () => {
                   <p className="text-sm text-muted-foreground">Adicione resultados manualmente ou via imagem</p>
                 </div>
               </div>
-              <NumberInput onNumberAdd={handleAddNumber} />
+              <NumberInput onNumberAdd={handleAddNumber} onBatchAdd={handleBatchAdd} />
               
               <div className="flex gap-2 justify-center mt-4">
                 <Button
