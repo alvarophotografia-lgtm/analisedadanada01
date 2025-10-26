@@ -161,6 +161,8 @@ export const useStrategyMonitor = (results: number[]) => {
         
         if (strategy.currentConsecutiveHits === 1) {
           // Estava na base e quebrou - conta como erro
+          // MAS verifica se o número atual inicia uma nova base
+          const startsNewBase = numberSet.includes(latestNumber);
           const newHistory = [...strategy.history, { spin: latestNumber, result: 'miss' as const }];
           const newStreak = strategy.currentStreak <= 0 ? strategy.currentStreak - 1 : -1;
           const shouldPrioritize = strategy.alertOnLossStreak && Math.abs(newStreak) >= strategy.alertOnLossStreak;
@@ -168,7 +170,7 @@ export const useStrategyMonitor = (results: number[]) => {
           return {
             ...strategy,
             misses: strategy.misses + 1,
-            currentConsecutiveHits: 0,
+            currentConsecutiveHits: startsNewBase ? 1 : 0,
             history: newHistory,
             currentStreak: newStreak,
             longestLossStreak: Math.max(strategy.longestLossStreak, Math.abs(newStreak)),
@@ -177,6 +179,8 @@ export const useStrategyMonitor = (results: number[]) => {
         }
         
         // Se tinha 2+ acertos consecutivos, marca erro e registra o streak
+        // MAS verifica se o número atual inicia uma nova base
+        const startsNewBase = numberSet.includes(latestNumber);
         const previousConsecutiveHits = strategy.currentConsecutiveHits;
         let newConsecutiveHitStreaks = { ...strategy.consecutiveHitStreaks };
         
@@ -194,7 +198,7 @@ export const useStrategyMonitor = (results: number[]) => {
         return {
           ...strategy,
           misses: strategy.misses + 1,
-          currentConsecutiveHits: 0,
+          currentConsecutiveHits: startsNewBase ? 1 : 0,
           consecutiveHitStreaks: newConsecutiveHitStreaks,
           history: newHistory,
           currentStreak: newStreak,

@@ -223,19 +223,34 @@ export const StrategyMonitor = ({ strategies, onToggle, onReset, onRemove, onUpd
 
               {/* Info minimizada - sempre visível */}
               {!isExpanded && (
-                <div className="mt-2 flex items-center justify-between text-xs">
-                  <div className="flex gap-3">
-                    <span className="text-green-400">✓ {strategy.hits}</span>
-                    <span className="text-red-400">✗ {strategy.misses}</span>
-                    <span className="text-cyan-400">{winRate}%</span>
+                <div className="mt-2 space-y-1">
+                  <div className="flex items-center justify-between text-xs">
+                    <div className="flex gap-3">
+                      <span className="text-green-400">✓ {strategy.hits}</span>
+                      <span className="text-red-400">✗ {strategy.misses}</span>
+                      <span className="text-cyan-400">{winRate}%</span>
+                    </div>
+                    {strategy.currentStreak !== 0 && (
+                      <span className={`font-semibold ${
+                        strategy.currentStreak > 0 ? 'text-green-400' : 'text-red-400'
+                      }`}>
+                        {strategy.currentStreak > 0 ? '+' : ''}{strategy.currentStreak}
+                      </span>
+                    )}
                   </div>
-                  {strategy.currentStreak !== 0 && (
-                    <span className={`font-semibold ${
-                      strategy.currentStreak > 0 ? 'text-green-400' : 'text-red-400'
-                    }`}>
-                      {strategy.currentStreak > 0 ? '+' : ''}{strategy.currentStreak}
-                    </span>
-                  )}
+                  
+                  {/* Próximo segmento esperado */}
+                  <div className="flex items-center gap-2 text-xs">
+                    <span className="text-gray-400">Próximo:</span>
+                    <Badge variant="outline" className="bg-yellow-500/10 text-yellow-400 border-yellow-500/50">
+                      {getValueLabel(strategy.sequence[strategy.currentProgress % strategy.sequence.length])}
+                    </Badge>
+                    {strategy.currentProgress > 0 && (
+                      <span className="text-gray-500">
+                        ({strategy.currentProgress}/{strategy.sequence.length})
+                      </span>
+                    )}
+                  </div>
                 </div>
               )}
 
