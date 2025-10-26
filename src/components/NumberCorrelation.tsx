@@ -1,11 +1,16 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 
 interface NumberCorrelationProps {
   results: number[];
+  compact?: boolean;
+  maxDisplay?: number;
 }
 
-export const NumberCorrelation = ({ results }: NumberCorrelationProps) => {
+export const NumberCorrelation = ({ results, compact = false, maxDisplay = 10 }: NumberCorrelationProps) => {
+  const [isExpanded, setIsExpanded] = useState(!compact);
   const correlations = useMemo(() => {
     if (results.length < 2) return [];
 
@@ -54,15 +59,16 @@ export const NumberCorrelation = ({ results }: NumberCorrelationProps) => {
     return correlationArray
       .filter(c => c.totalOccurrences >= 2)
       .sort((a, b) => b.totalOccurrences - a.totalOccurrences)
-      .slice(0, 10);
-  }, [results]);
+      .slice(0, maxDisplay);
+  }, [results, maxDisplay]);
 
   if (results.length < 2) {
+    if (compact) return null;
     return (
-      <div className="glass-card rounded-xl p-12 text-center">
-        <div className="text-6xl mb-4">🔗</div>
-        <h3 className="text-2xl font-bold mb-2">Dados Insuficientes</h3>
-        <p className="text-gray-400">
+      <div className="glass-card rounded-xl p-8 md:p-12 text-center">
+        <div className="text-4xl md:text-6xl mb-4">🔗</div>
+        <h3 className="text-xl md:text-2xl font-bold mb-2">Dados Insuficientes</h3>
+        <p className="text-sm md:text-base text-gray-400">
           Adicione mais números para ver correlações
         </p>
       </div>
@@ -70,13 +76,31 @@ export const NumberCorrelation = ({ results }: NumberCorrelationProps) => {
   }
 
   return (
-    <div className="glass-card rounded-xl p-6">
-      <h3 className="text-xl font-bold mb-2">🔗 Correlação de Números</h3>
-      <p className="text-sm text-gray-400 mb-4">
-        Números que frequentemente aparecem após outros números específicos
-      </p>
+    <div className="glass-card rounded-xl p-4 md:p-6">
+      <div className="flex items-center justify-between mb-3">
+        <div>
+          <h3 className="text-base md:text-xl font-bold">🔗 Correlação de Números</h3>
+          {!compact && (
+            <p className="text-xs md:text-sm text-gray-400 mt-1">
+              Números que frequentemente aparecem após outros números específicos
+            </p>
+          )}
+        </div>
+        {compact && (
+          <Button
+            onClick={() => setIsExpanded(!isExpanded)}
+            variant="ghost"
+            size="sm"
+            className="gap-2"
+          >
+            {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+            {isExpanded ? 'Minimizar' : 'Ver Mais'}
+          </Button>
+        )}
+      </div>
       
-      <div className="space-y-3">
+      {isExpanded && (
+        <div className="space-y-3">
         {correlations.map((correlation) => (
           <Card key={correlation.number} className="p-4 bg-white/5 border-white/10">
             <div className="flex items-start justify-between mb-2">
@@ -114,7 +138,8 @@ export const NumberCorrelation = ({ results }: NumberCorrelationProps) => {
             </div>
           </Card>
         ))}
-      </div>
+        </div>
+      )}
     </div>
   );
 };

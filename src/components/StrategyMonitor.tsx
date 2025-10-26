@@ -15,6 +15,7 @@ interface StrategyMonitorProps {
   strategies: Strategy[];
   onToggle: (id: string) => void;
   onReset: (id: string) => void;
+  onResetAll: () => void;
   onRemove: (id: string) => void;
   onUpdateAlerts: (id: string, alertOnWinStreak?: number, alertOnLossStreak?: number) => void;
 }
@@ -45,7 +46,7 @@ const getValueLabel = (value: any): string => {
   }
 };
 
-export const StrategyMonitor = ({ strategies, onToggle, onReset, onRemove, onUpdateAlerts }: StrategyMonitorProps) => {
+export const StrategyMonitor = ({ strategies, onToggle, onReset, onResetAll, onRemove, onUpdateAlerts }: StrategyMonitorProps) => {
   const [editingStrategyId, setEditingStrategyId] = useState<string | null>(null);
   const [tempAlertWins, setTempAlertWins] = useState<number>(0);
   const [tempAlertLosses, setTempAlertLosses] = useState<number>(0);
@@ -81,10 +82,10 @@ export const StrategyMonitor = ({ strategies, onToggle, onReset, onRemove, onUpd
   };
   if (strategies.length === 0) {
     return (
-      <div className="glass-card rounded-xl p-12 text-center">
-        <div className="text-6xl mb-4">🎯</div>
-        <h3 className="text-2xl font-bold mb-2">Nenhuma Estratégia Ativa</h3>
-        <p className="text-gray-400">
+      <div className="glass-card rounded-xl p-8 md:p-12 text-center">
+        <div className="text-4xl md:text-6xl mb-4">🎯</div>
+        <h3 className="text-xl md:text-2xl font-bold mb-2">Nenhuma Estratégia Ativa</h3>
+        <p className="text-sm md:text-base text-gray-400">
           Crie uma estratégia para começar a monitorar padrões
         </p>
       </div>
@@ -93,6 +94,20 @@ export const StrategyMonitor = ({ strategies, onToggle, onReset, onRemove, onUpd
 
   return (
     <div className="space-y-3">
+      {/* Botão Reset All */}
+      {strategies.length > 0 && (
+        <div className="flex justify-end mb-2">
+          <Button
+            onClick={onResetAll}
+            variant="outline"
+            size="sm"
+            className="gap-2 text-xs"
+          >
+            <RotateCcw className="w-3 h-3" />
+            Resetar Todas
+          </Button>
+        </div>
+      )}
       {strategies.map((strategy) => {
         const progress = (strategy.currentProgress / strategy.sequence.length) * 100;
         const total = strategy.hits + strategy.misses;
@@ -115,7 +130,7 @@ export const StrategyMonitor = ({ strategies, onToggle, onReset, onRemove, onUpd
             onOpenChange={() => toggleExpanded(strategy.id)}
           >
             <div
-              className={`glass-card rounded-xl p-3 sm:p-4 relative ${
+              className={`glass-card rounded-xl p-3 sm:p-4 relative overflow-hidden ${
                 strategy.isPriority 
                   ? 'ring-2 ring-yellow-500 shadow-lg shadow-yellow-500/20 neon-glow' 
                   : strategy.isActive 
@@ -131,8 +146,8 @@ export const StrategyMonitor = ({ strategies, onToggle, onReset, onRemove, onUpd
               )}
               
               {/* Header - sempre visível */}
-              <div className="flex items-center justify-between gap-2">
-                <div className="flex items-center gap-2 flex-1 min-w-0">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+                <div className="flex items-center gap-2 flex-1 min-w-0 w-full sm:w-auto">
                   <CollapsibleTrigger asChild>
                     <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0">
                       {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
@@ -146,7 +161,7 @@ export const StrategyMonitor = ({ strategies, onToggle, onReset, onRemove, onUpd
                   />
                 </div>
                 
-                <div className="flex gap-1 shrink-0">
+                <div className="flex gap-1 shrink-0 ml-10 sm:ml-0">
                   <Dialog>
                     <DialogTrigger asChild>
                       <Button
@@ -240,13 +255,13 @@ export const StrategyMonitor = ({ strategies, onToggle, onReset, onRemove, onUpd
                   </div>
                   
                   {/* Próximo segmento esperado */}
-                  <div className="flex items-center gap-2 text-xs">
-                    <span className="text-gray-400">Próximo:</span>
-                    <Badge variant="outline" className="bg-yellow-500/10 text-yellow-400 border-yellow-500/50">
-                      {getValueLabel(strategy.sequence[strategy.currentProgress % strategy.sequence.length])}
+                  <div className="flex flex-wrap items-center gap-2 text-xs">
+                    <span className="text-gray-400">Aguardando:</span>
+                    <Badge variant="outline" className="bg-yellow-500/10 text-yellow-400 border-yellow-500/50 whitespace-nowrap">
+                      {getValueLabel(strategy.sequence[strategy.currentProgress])}
                     </Badge>
                     {strategy.currentProgress > 0 && (
-                      <span className="text-gray-500">
+                      <span className="text-gray-500 whitespace-nowrap">
                         ({strategy.currentProgress}/{strategy.sequence.length})
                       </span>
                     )}
@@ -257,7 +272,7 @@ export const StrategyMonitor = ({ strategies, onToggle, onReset, onRemove, onUpd
               {/* Conteúdo expandido */}
               <CollapsibleContent>
                 <div className="mt-4 space-y-3">
-                  <div className="flex flex-wrap gap-1">
+                  <div className="flex flex-wrap gap-1 max-w-full overflow-x-auto">
                     {strategy.sequence.map((value, idx) => (
                       <Badge
                         key={idx}

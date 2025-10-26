@@ -19,7 +19,7 @@ import { RotateCcw, Trash2 } from 'lucide-react';
 
 const Index = () => {
   const { results, stats, addNumber, addBatch, clearResults, undoLast } = useRouletteData();
-  const { strategies, addStrategy, removeStrategy, toggleStrategy, resetStrategy, updateAlerts } = useStrategyMonitor(results);
+  const { strategies, addStrategy, removeStrategy, toggleStrategy, resetStrategy, resetAllStrategies, updateAlerts, processNumber } = useStrategyMonitor(results);
 
   const handleImport = (data: { results: number[]; strategies: Strategy[] }) => {
     // Clear current data
@@ -48,11 +48,15 @@ const Index = () => {
   const [activeTab, setActiveTab] = useState('input');
 
   const handleAddNumber = (num: number) => {
+    // Primeiro processa nas estratégias, depois adiciona aos resultados
+    processNumber(num);
     addNumber(num);
     toast.success(`Número ${num} adicionado!`);
   };
 
   const handleBatchAdd = (nums: number[]) => {
+    // Processa cada número nas estratégias antes de adicionar em lote
+    nums.forEach(n => processNumber(n));
     addBatch(nums);
     toast.success(`${nums.length} números adicionados!`);
   };
@@ -101,14 +105,6 @@ const Index = () => {
 
           {/* Input Tab */}
           <TabsContent value="input" className="space-y-4 md:space-y-6">
-            {/* Data Manager */}
-            <DataManager
-              results={results}
-              strategies={strategies}
-              onImport={handleImport}
-              onClearAll={handleClearAll}
-            />
-
             <div className="glass-card rounded-xl p-4 md:p-6">
               <div className="flex items-center gap-3 mb-4">
                 <div className="text-3xl">🎲</div>
@@ -141,6 +137,9 @@ const Index = () => {
               </div>
             </div>
 
+            {/* Correlação de Números - Compacta */}
+            <NumberCorrelation results={results} compact maxDisplay={5} />
+
             <div className="grid md:grid-cols-2 gap-6">
               <div>
                 <div className="flex items-center gap-3 mb-4">
@@ -154,6 +153,7 @@ const Index = () => {
                   strategies={strategies}
                   onToggle={toggleStrategy}
                   onReset={resetStrategy}
+                  onResetAll={resetAllStrategies}
                   onRemove={removeStrategy}
                   onUpdateAlerts={updateAlerts}
                 />
@@ -201,6 +201,7 @@ const Index = () => {
                   strategies={strategies}
                   onToggle={toggleStrategy}
                   onReset={resetStrategy}
+                  onResetAll={resetAllStrategies}
                   onRemove={removeStrategy}
                   onUpdateAlerts={updateAlerts}
                 />
@@ -225,6 +226,14 @@ const Index = () => {
               <h2 className="text-2xl md:text-3xl font-bold mb-2">📊 Dashboard Completo</h2>
               <p className="text-gray-300">Visualização completa dos dados e estatísticas</p>
             </div>
+
+            {/* Data Manager */}
+            <DataManager
+              results={results}
+              strategies={strategies}
+              onImport={handleImport}
+              onClearAll={handleClearAll}
+            />
 
             {/* Stats Grid */}
             <div className="flex items-center gap-3 mb-4">

@@ -304,6 +304,27 @@ export const useStrategyMonitor = (results: number[]) => {
     ));
   }, []);
 
+  const resetAllStrategies = useCallback(() => {
+    setStrategies(prev => prev.map(s => ({ 
+      ...s, 
+      hits: 0, 
+      misses: 0, 
+      currentProgress: 0, 
+      history: [], 
+      currentStreak: 0,
+      longestWinStreak: 0,
+      longestLossStreak: 0,
+      currentConsecutiveHits: (s.type === 'number-set' || s.type === 'target-numbers') ? 0 : undefined,
+      consecutiveHitStreaks: (s.type === 'number-set' || s.type === 'target-numbers') ? {} : undefined,
+      isPriority: false,
+    })));
+    toast({
+      title: "✅ Resetadas",
+      description: "Todas as estratégias foram resetadas com sucesso!",
+      duration: 3000,
+    });
+  }, [toast]);
+
   const updateAlerts = useCallback((id: string, alertOnWinStreak?: number, alertOnLossStreak?: number) => {
     setStrategies(prev => prev.map(s => 
       s.id === id ? { 
@@ -314,6 +335,55 @@ export const useStrategyMonitor = (results: number[]) => {
       } : s
     ));
   }, []);
+
+  // Função para processar um número específico antes de adicionar aos resultados
+  const processNumber = useCallback((latestNumber: number) => {
+    setStrategies(prev => {
+      const updated = prev.map(strategy => {
+        const updatedStrategy = processStrategyUpdate(strategy, latestNumber);
+        
+        // Notifica se atingiu sequência de vitórias
+        if (
+          updatedStrategy.alertOnWinStreak &&
+          updatedStrategy.currentStreak >= updatedStrategy.alertOnWinStreak &&
+          strategy.currentStreak < updatedStrategy.alertOnWinStreak
+        ) {
+          toast({
+            title: "🎯 Sequência de Acertos!",
+            description: `${updatedStrategy.name}: ${updatedStrategy.currentStreak} acertos consecutivos`,
+            duration: 5000,
+          });
+          audioRef.current?.play().catch(err => console.warn('Audio play failed:', err));
+        }
+        
+        // Notifica se atingiu sequência de perdas
+        if (
+          updatedStrategy.alertOnLossStreak &&
+          Math.abs(updatedStrategy.currentStreak) >= updatedStrategy.alertOnLossStreak &&
+          Math.abs(strategy.currentStreak) < updatedStrategy.alertOnLossStreak
+        ) {
+          toast({
+            title: "⚠️ Sequência de Erros",
+            description: `${updatedStrategy.name}: ${Math.abs(updatedStrategy.currentStreak)} erros consecutivos`,
+            duration: 5000,
+            variant: "destructive",
+          });
+          audioRef.current?.play().catch(err => console.warn('Audio play failed:', err));
+        }
+        
+        return updatedStrategy;
+      });
+
+      // Ordenar: estratégias prioritárias primeiro, depois ativas, depois inativas
+      return updated.sort((a, b) => {
+        if (a.isPriority && !b.isPriority) return -1;
+        if (!a.isPriority && b.isPriority) return 1;
+        if (a.isActive && !b.isActive) return -1;
+        if (!a.isActive && b.isActive) return 1;
+        return 0;
+      });
+    });
+  }, [toast]);
 
   // Atualiza estratégias baseado nos resultados
   useEffect(() => {
@@ -374,6 +444,8 @@ export const useStrategyMonitor = (results: number[]) => {
     removeStrategy,
     toggleStrategy,
     resetStrategy,
+    resetAllStrategies,
     updateAlerts,
+    processNumber,
   };
 };
